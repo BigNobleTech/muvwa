@@ -1,0 +1,42 @@
+name: Muvwa iOS Build
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    name: 🎉 Muvwa iOS Build
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout Muvwa repository
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Check Flutter version
+        run: flutter --version
+
+      - name: Get Flutter dependencies
+        run: flutter pub get
+
+      - name: Install CocoaPods dependencies
+        run: pod install
+        working-directory: ios
+
+      - name: Build iOS app
+        run: flutter build ios --release --no-codesign
+
+      - name: Create ZIP of Runner.app
+        run: |
+          cd build/ios/iphoneos
+          zip -r Runner.app.zip Runner.app
+
+      - name: Upload Runner.app
+        uses: actions/upload-artifact@v4
+        with:
+          name: Muvwa-iOS-App
+          path: build/ios/iphoneos/Runner.app.zip
